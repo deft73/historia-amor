@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuestra Historia</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #fdf6f0, #f9e1ec);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.contenedor {
+    width: 95%;
+    max-width: 900px;
+    min-height: 90vh;
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    transition: 0.5s ease;
+}
+
+/* PANEL DE MÚSICA */
+.musica-panel {
+    width: 35%;
+    background: #fafafa;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.musica-panel img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.musica-panel h2 {
+    margin-top: 15px;
+    text-align: center;
+    color: #d95988;
+}
+
+/* HISTORIA */
+.historia {
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: 0.5s ease;
+}
+
+h1 {
+    font-family: 'Dancing Script', cursive;
+    text-align: center;
+    color: #d95988;
+}
+
+/* AREA DE FOTOS */
+.foto-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.foto-area img {
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* TEXTO */
+.texto {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.boton {
+    background: #f4cfdf;
+    border: none;
+    padding: 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* MINI-JUEGO DEL SOBRE */
+#mini-juego-area {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: #fdf6f0;
+    border-radius: 25px;
+    z-index: 50;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#objeto-carta {
+    width: 80px;
+    cursor: pointer;
+    position: absolute;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.anim-float { animation: float 3s infinite ease-in-out; }
+
+/* CARTA FINAL */
+#carta-final {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    padding: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+.carta-scroll {
+    background: #fff;
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 5px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    position: relative;
+    background-image: linear-gradient(#f1f1f1 1px, transparent 1px);
+    background-size: 100% 30px;
+    line-height: 30px;
+}
+
+.fuente-manuscrita {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 1.3rem;
+    color: #2c3e50;
+}
+</style>
+</head>
+<body>
+
+<div class="contenedor">
+
+<div class="musica-panel">
+    <img id="cover" src="covers/spark.jpg">
+    <h2 id="nombreCancion">Spark - Coldplay</h2>
+    <audio id="musica" controls style="width:100%; margin-top:15px;"></audio>
+</div>
+
+<div class="historia" id="historia">
+    <h1>Nuestra Historia</h1>
+
+    <div class="foto-area">
+        <img id="fotoActual" src="img/foto1.jpg">
+    </div>
+
+    <div class="texto" id="textoMensaje">
+        Este fue el inicio de algo hermoso 💕
+    </div>
+
+    <button class="boton" onclick="siguienteFoto()">Siguiente</button>
+</div>
+
+<!-- MINI-JUEGO CARTA -->
+<div id="mini-juego-area">
+    <h3 style="text-align:center; margin-bottom:20px;">¡Casi llegas! Atrápala para leerla...</h3>
+    <img src="covers/sobre.png" id="objeto-carta" alt="Sobre de carta" class="anim-float">
+</div>
+
+<!-- CARTA FINAL -->
+<div id="carta-final">
+    <div class="carta-scroll">
+        <div class="fuente-manuscrita" id="textoCarta"></div>
+    </div>
+</div>
+
+<script>
+let fotoNumero = 1;
+const totalFotos = 21;
+let musicaIniciada = false;
+let cancionActual = 0;
+
+const mensajes = [
+"Este fue el inicio de algo hermoso 💕",
+"Aquí empezó algo que no imaginaba.",
+"Poco a poco te volviste especial.",
+"Sin darme cuenta ya eras importante.",
+"Tu sonrisa empezó a gustarme demasiado.",
+"Aquí ya me estabas cambiando el mundo.",
+"Cada momento contigo se sentía diferente.",
+"Empezaba a sentir algo más fuerte.",
+"No sabía que esto iba a crecer tanto.",
+"Contigo todo se siente más bonito.",
+"Aquí ya no había vuelta atrás.",
+"Tu mirada se volvió mi lugar favorito.",
+"Me haces sentir cosas que nadie más.",
+"Cada recuerdo contigo vale oro.",
+"Me gusta cómo se ve el mundo contigo.",
+"Sin buscarlo, te encontré.",
+"Y sin planearlo, me enamoré.",
+"No fue perfecto, pero fue real.",
+"Y eso es lo que lo hace especial.",
+"Gracias por cada momento.",
+"Y ojalá sigan siendo muchos más."
+];
+
+const canciones = [
+{archivo:"music/spark.mp3",cover:"covers/spark.jpg",nombre:"Spark - Coldplay"},
+{archivo:"music/muelle.mp3",cover:"covers/muelle.jpg",nombre:"El Muelle de San Blas - Maná"},
+{archivo:"music/vieja.mp3",cover:"covers/vieja.jpg",nombre:"Una vieja canción de amor - Raúl Abramzon"}
+];
+
+const musica = document.getElementById("musica");
+
+function iniciarMusica(){
+    if(!musicaIniciada){
+        cargarCancion();
+        musica.play();
+        musicaIniciada=true;
+    }
+}
+
+function cargarCancion(){
+    musica.src=canciones[cancionActual].archivo;
+    document.getElementById("cover").src=canciones[cancionActual].cover;
+    document.getElementById("nombreCancion").innerText=canciones[cancionActual].nombre;
+}
+
+musica.addEventListener("ended",function(){
+    cancionActual++;
+    if(cancionActual>=canciones.length){cancionActual=0;}
+    cargarCancion();
+    musica.play();
+});
+
+function siguienteFoto(){
+    iniciarMusica();
+    fotoNumero++;
+
+    if(fotoNumero>totalFotos){
+        iniciarMiniJuego();
+        return;
+    }
+
+    document.getElementById("fotoActual").src="img/foto"+fotoNumero+".jpg";
+    document.getElementById("textoMensaje").innerText=mensajes[fotoNumero-1];
+}
+
+// --- MINI-JUEGO ---
+let clicsParaGanar = 5;
+function iniciarMiniJuego(){
+    document.getElementById('mini-juego-area').style.display='flex';
+    const carta = document.getElementById('objeto-carta');
+    moverCarta();
+
+    carta.onclick = () => {
+        clicsParaGanar--;
+        if(clicsParaGanar<=0){
+            document.getElementById('mini-juego-area').style.display='none';
+            mostrarCartaFinal();
+        } else {
+            moverCarta();
+        }
+    };
+}
+
+function moverCarta(){
+    const carta = document.getElementById('objeto-carta');
+    const area = document.getElementById('mini-juego-area');
+    const maxX = area.clientWidth - 100;
+    const maxY = area.clientHeight - 100;
+
+    const randomX = Math.floor(Math.random() * maxX);
+    const randomY = Math.floor(Math.random() * maxY);
+
+    carta.style.left = randomX + "px";
+    carta.style.top = randomY + "px";
+}
+
+// --- CARTA FINAL ANIMADA ---
+const cartaTexto = `
+Querida Andrea, mi Patito, mi Chancri,
+
+Si estás leyendo esto, es porque llegaste al final de nuestro recorrido.
+Quiero que sepas lo mucho que lamento cada discusión, cada silencio,
+cada momento en que no estuve a la altura de lo que mereces.
+
+Me duele pensar en los días que pasamos separados y cómo mis errores
+hicieron que te sintieras sola. Me duele porque nunca quise lastimarte,
+pero sé que lo hice. Y aún así, aquí estoy, intentando reconstruir lo que rompí.
+
+Recuerdo tus ojos cuando me mirabas con cariño, tus sonrisas que iluminaban
+mis días, tu voz que siempre me calmaba... Y extraño todo eso.
+No hay nada más importante para mí que volver a verte feliz,
+que volver a ser ese equipo que éramos.
+
+Chancri, cada momento contigo vale más de lo que puedo expresar.
+Patito, cada vez que pienso en ti, siento que aún hay esperanza
+para nosotros, que podemos volver a construir recuerdos, a reír juntos,
+a ser cómplices de nuestra propia historia.
+
+Sé que no puedo borrar lo que pasó, pero puedo prometerte
+que estoy dispuesto a cambiar, a escucharte, a aprender de mis errores.
+Quiero que sientas mi sinceridad en cada palabra,
+porque eres la mujer más increíble que he conocido.
+
+Te extraño con cada fibra de mi ser.
+Te amo con toda la fuerza que tengo y no quiero perder lo que somos.
+Esta carta no es solo un mensaje, es mi corazón abierto, mi alma
+hablándote de verdad.
+
+Mi amor, mi Patito, mi Chancri… gracias por cada momento que me diste,
+gracias por enseñarme lo que es amar de verdad,
+y gracias por darme la posibilidad de intentar reconstruir nuestro mundo juntos.
+
+Con todo mi amor y arrepentimiento sincero,
+Fabricio
+`;
+
+function escribirCarta(texto){
+    const caja = document.getElementById("textoCarta");
+    caja.innerHTML = "";
+    let i = 0;
+    function escribir(){
+        if(i < texto.length){
+            caja.innerHTML += texto.charAt(i)==="\n" ? "<br>" : texto.charAt(i);
+            i++;
+            setTimeout(escribir, 25);
+        }
+    }
+    escribir();
+}
+
+function mostrarCartaFinal(){
+    document.getElementById('carta-final').style.display='flex';
+    escribirCarta(cartaTexto);
+}
+</script>
+
+</body>
+</html>
